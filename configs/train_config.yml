@@ -38,7 +38,7 @@ batch_size: 16  # batch size for both validation and train dataloader
 num_workers_train: 0  # param for training dataloader
 num_workers_val: 0  # param for validation dataloader
 
-default_root_dir: "/root/lgsc-for-fas-pytorch/logs/"  # path to save pytorch_lightning logs
+default_root_dir: "/root/lgsc/logs/"  # path to save pytorch_lightning logs
 max_epochs: 15  # max number of epochs to train (if doesn't achieved early stopping)
 
 use_balance_sampler: False  # You can try overcome class disbalance using balance sampler

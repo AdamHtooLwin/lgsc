@@ -45,7 +45,6 @@ class LightningModel(pl.LightningModule):
 
     def get_progress_bar_dicts(self):
         items = super().get_progress_bar_dicts()
-        items.pop("v_num", None)
         return items
 
     def forward(self, x):
@@ -116,16 +115,16 @@ class LightningModel(pl.LightningModule):
 
         outs, clf_out = self(input_)
         loss = self.calc_losses(outs, clf_out, target)
-        result = pl.EvalResult()
-        result.log('val_loss', loss, on_step=True, on_epoch=True, prog_bar=True, logger=True)
-        result.log('score', clf_out.cpu().numpy(), on_step=True, on_epoch=True, prog_bar=True, logger=True)
-        result.log('target', target.cpu().numpy(), on_step=True, on_epoch=True, prog_bar=True, logger=True)
+        # result = pl.EvalResult()
+        # result.log('val_loss', loss, on_step=True, on_epoch=True, prog_bar=True, logger=True)
+        # result.log('score', clf_out.cpu().numpy(), on_step=True, on_epoch=True, prog_bar=True, logger=True)
+        # result.log('target', target.cpu().numpy(), on_step=True, on_epoch=True, prog_bar=True, logger=True)
 
-        # val_dict = {
-        #     "val_loss": loss,
-        #     "score": clf_out.cpu().numpy(),
-        #     "target": target.cpu().numpy(),
-        # }
+        val_dict = {
+            "val_loss": loss,
+            "score": clf_out.cpu().numpy(),
+            "target": target.cpu().numpy(),
+        }
 
         if self.log_cues:
             if (
@@ -141,14 +140,13 @@ class LightningModel(pl.LightningModule):
                     "images", images_grid, self.current_epoch * batch_idx
                 )
 
-        return result
+        return val_dict
 
     # outputs of all the training steps -> list of dicts
     def validation_epoch_end(self, outputs):
         avg_loss = torch.stack([x["val_loss"] for x in outputs]).mean()
-        # avg_loss = torch.stack([x["step_val_loss"] for x in outputs]).mean()
-        targets = np.hstack([output["step_target"] for output in outputs])
-        scores = np.vstack([output["step_score"] for output in outputs])[:, 1]
+        targets = np.hstack([output["target"] for output in outputs])
+        scores = np.vstack([output["score"] for output in outputs])[:, 1]
         metrics_, best_thr, acc = eval_from_scores(scores, targets)
         acer, apcer, npcer = metrics_
         roc_auc = metrics.roc_auc_score(targets, scores)

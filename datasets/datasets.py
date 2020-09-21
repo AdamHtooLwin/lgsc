@@ -15,10 +15,13 @@ def get_train_augmentations(image_size: int = 224):
         [
             # A.CoarseDropout(20),
             # A.Rotate(30),
+            A.Resize(image_size, image_size),
             # A.RandomCrop(image_size, image_size, p=0.5),
             A.LongestMaxSize(image_size),
+            A.Normalize(),
+            A.HorizontalFlip(),
             A.PadIfNeeded(image_size, image_size, 0),
-            # A.Normalize(),
+            A.Transpose(),
             ToTensor(),
         ]
     )
@@ -27,9 +30,10 @@ def get_train_augmentations(image_size: int = 224):
 def get_test_augmentations(image_size: int = 224):
     return A.Compose(
         [
+            A.Resize(image_size, image_size),
             A.LongestMaxSize(image_size),
+            A.Normalize(),
             A.PadIfNeeded(image_size, image_size, 0),
-            # A.Normalize(),
             ToTensor(),
         ]
     )

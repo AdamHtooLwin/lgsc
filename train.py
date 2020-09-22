@@ -1,4 +1,6 @@
 from argparse import ArgumentParser, Namespace
+from pytorch_lightning import loggers as pl_loggers
+
 
 import safitty
 import pytorch_lightning as pl
@@ -28,12 +30,14 @@ if __name__ == "__main__":
     if not os.path.isdir(configs.default_root_dir):
         os.makedirs(configs.default_root_dir)
 
+    tb_logger = pl_loggers.TensorBoardLogger('logs/tensorboard/')
     model = LightningModel(hparams=configs)
     trainer = pl.Trainer.from_argparse_args(
         configs,
         fast_dev_run=False,
         early_stop_callback=True,
         default_root_dir=configs.default_root_dir,
+        logger=tb_logger,
         gpus=1,
         # distributed_backend="ddp"
     )

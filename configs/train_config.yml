@@ -8,7 +8,7 @@ loss_coef:  # coefficients for losses
   trip_loss: 1.0
 
 # TODO: config for optimizer
-lr: 0.0001  # optimizer lr
+lr: 0.0005  # optimizer lr
 # TODO: config for scheduler
 milestones:  # MultiStepLR scheduler params
   - 5
@@ -17,7 +17,15 @@ milestones:  # MultiStepLR scheduler params
 gamma: 0.3
 
 image_size: 224  # size of input image
-cue_log_every: 100  # will log cues every cue_log_every batches. If 0, than won't log
+cue_log_every: 50  # will log cues every cue_log_every batches. If 0, than won't log
+mean:
+  r: 0.485
+  g: 0.456
+  b: 0.406
+std:
+  r: 0.229
+  g: 0.224
+  b: 0.225
 
 # uncomment this, to use online face cropping
 # however it is not recommended
@@ -34,12 +42,12 @@ train_df: "/root/datasets/surf/train_labels.csv"  # path to train csv file
 val_df: "/root/datasets/surf/val_labels.csv"  # path to validation csv file
 path_root: "/root/datasets/surf"  # prefix path to your images
 
-batch_size: 16  # batch size for both validation and train dataloader
+batch_size: 32  # batch size for both validation and train dataloader
 num_workers_train: 0  # param for training dataloader
 num_workers_val: 0  # param for validation dataloader
 
 default_root_dir: "/root/lgsc/logs/"  # path to save pytorch_lightning logs
 max_epochs: 15  # max number of epochs to train (if doesn't achieved early stopping)
 
-use_balance_sampler: False  # You can try overcome class disbalance using balance sampler
+use_balance_sampler: True  # You can try overcome class disbalance using balance sampler
 use_focal_loss: False  # You can try use focal loss instead of cross-entropy loss

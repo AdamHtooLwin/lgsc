@@ -30,6 +30,12 @@ def imshow(batch, title=None):
     plt.pause(0.001)  # pause a bit so that plots are updated
 
 
+def construct_grid(batch):
+    images = torchvision.utils.make_grid(batch)
+    images = images.detach().cpu().numpy()
+    return images
+
+
 class LightningModel(pl.LightningModule):
     def __init__(self, hparams):
         super().__init__()
@@ -85,19 +91,27 @@ class LightningModel(pl.LightningModule):
         input_ = batch[0]
         target = batch[1]
 
-        if self.hparams.show_imgs:
-            imshow(batch[0], title="Training")
-
         outs, clf_out = self(input_)
         loss = self.calc_losses(outs, clf_out, target)
 
+        if self.hparams.show_imgs:
+            imshow(input_, title="Training")
+            imshow(outs[-1], title="Training Cues")
+
+        if self.log_cues:
+            if (self.current_epoch * batch_idx) % self.hparams.cue_log_every == 0:
+                images_grid = construct_grid(input_)
+                cues_grid = construct_grid(outs[-1])
+
+                self.logger.experiment.add_image(
+                    "training_cues", cues_grid, self.current_epoch * batch_idx
+                )
+                self.logger.experiment.add_image(
+                    "training_images", images_grid, self.current_epoch * batch_idx
+                )
+
         tensorboard_logs = {"train_loss": loss}
         return {"loss": loss, "log": tensorboard_logs}
-
-        # result = pl.TrainResult(loss)
-        # result.log('train_loss', loss, on_step=True, on_epoch=True, prog_bar=True, logger=True)
-        #
-        # return result
 
     def training_epoch_end(self, outputs):
         avg_loss = torch.stack([x["loss"] for x in outputs]).mean()
@@ -130,14 +144,14 @@ class LightningModel(pl.LightningModule):
             if (
                 self.current_epoch * batch_idx
             ) % self.hparams.cue_log_every == 0:
-                cues_grid, images_grid = self.grid_maker(
+                images_grid, cues_grid = self.grid_maker(
                     input_.detach().cpu()[:6], outs[-1][:6]
                 )
                 self.logger.experiment.add_image(
-                    "cues", cues_grid, self.current_epoch * batch_idx
+                    "validation_cues", cues_grid, self.current_epoch * batch_idx
                 )
                 self.logger.experiment.add_image(
-                    "images", images_grid, self.current_epoch * batch_idx
+                    "validation_images", images_grid, self.current_epoch * batch_idx
                 )
 
         return val_dict
@@ -169,7 +183,10 @@ class LightningModel(pl.LightningModule):
         return [optim], [scheduler]
 
     def train_dataloader(self):
-        transforms = get_train_augmentations(self.hparams.image_size)
+        mean = (self.hparams.mean['r'], self.hparams.mean['g'], self.hparams.mean['b'])
+        std = (self.hparams.std['r'], self.hparams.std['g'], self.hparams.std['b'])
+
+        transforms = get_train_augmentations(self.hparams.image_size, mean=mean, std=std)
         df = pd.read_csv(self.hparams.train_df)
         try:
             face_detector = self.hparams.face_detector
@@ -195,7 +212,10 @@ class LightningModel(pl.LightningModule):
         return dataloader
 
     def val_dataloader(self):
-        transforms = get_test_augmentations(self.hparams.image_size)
+        mean = (self.hparams.mean['r'], self.hparams.mean['g'], self.hparams.mean['b'])
+        std = (self.hparams.std['r'], self.hparams.std['g'], self.hparams.std['b'])
+
+        transforms = get_test_augmentations(self.hparams.image_size, mean=mean, std=std)
         df = pd.read_csv(self.hparams.val_df)
         try:
             face_detector = self.hparams.face_detector

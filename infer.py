@@ -4,6 +4,7 @@ from typing import List, Tuple, Union
 import pandas as pd
 import numpy as np
 from tqdm import tqdm
+import os
 
 import torch
 from torch.utils.data import DataLoader
@@ -13,8 +14,15 @@ from datasets import get_test_augmentations, Dataset
 from metrics import eval_from_scores
 
 
+os.environ['http_proxy'] = 'http://192.41.170.23:3128'
+os.environ['https_proxy'] = 'http://192.41.170.23:3128'
+
+
 def prepare_infer_dataloader(args: Namespace) -> DataLoader:
-    transforms = get_test_augmentations(args.image_size)
+    mean = (args.mean['r'], args.mean['g'], args.mean['b'])
+    std = (args.std['r'], args.std['g'], args.std['b'])
+
+    transforms = get_test_augmentations(args.image_size, mean=mean, std=std)
     df = pd.read_csv(args.infer_df)
 
     try:
@@ -101,6 +109,10 @@ if __name__ == "__main__":
         acer_, apcer_, npcer_, acc_, best_thr_ = infer_model(
             model_, dataloader_, args_.device, args_.verbose, True
         )
+
+        if not os.path.isdir("results/"):
+            os.makedirs("results/")
+
         with open(args_.out_file, "w") as file:
             file.write(f"acer - {acer_}\n")
             file.write(f"apcer - {apcer_}\n")

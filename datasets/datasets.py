@@ -10,7 +10,7 @@ import albumentations as A
 from albumentations.pytorch import ToTensorV2 as ToTensor
 
 
-def get_train_augmentations(image_size: int = 224):
+def get_train_augmentations(image_size: int = 224, mean: tuple = (0, 0, 0), std: tuple = (1, 1, 1)):
     return A.Compose(
         [
             # A.CoarseDropout(20),
@@ -18,7 +18,7 @@ def get_train_augmentations(image_size: int = 224):
             A.Resize(image_size, image_size),
             # A.RandomCrop(image_size, image_size, p=0.5),
             A.LongestMaxSize(image_size),
-            A.Normalize(),
+            A.Normalize(mean=mean, std=std),
             A.HorizontalFlip(),
             A.PadIfNeeded(image_size, image_size, 0),
             A.Transpose(),
@@ -27,12 +27,12 @@ def get_train_augmentations(image_size: int = 224):
     )
 
 
-def get_test_augmentations(image_size: int = 224):
+def get_test_augmentations(image_size: int = 224, mean: tuple = (0, 0, 0), std: tuple = (1, 1, 1)):
     return A.Compose(
         [
             A.Resize(image_size, image_size),
             A.LongestMaxSize(image_size),
-            A.Normalize(),
+            A.Normalize(mean=mean, std=std),
             A.PadIfNeeded(image_size, image_size, 0),
             ToTensor(),
         ]
@@ -67,7 +67,7 @@ class Dataset(torch.utils.data.Dataset):
         file = np.random.choice(os.listdir(parent_path))
         full_path = os.path.join(parent_path, file)
 
-        image = Image.open(full_path)
+        image = Image.open(path)
         if self.with_labels:
             target = self.df.iloc[item].target
 

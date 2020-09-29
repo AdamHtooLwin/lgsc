@@ -40,6 +40,7 @@ if __name__ == "__main__":
 
     model = LightningModel(hparams=configs)
     trainer = pl.Trainer.from_argparse_args(
+        configs,
         default_root_dir=configs.default_root_dir,
         fast_dev_run=False,
         checkpoint_callback=checkpoint_callback,

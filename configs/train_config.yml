@@ -1,6 +1,6 @@
 #device: &device cpu
 
-show_imgs: True
+show_imgs: False
 
 loss_coef:  # coefficients for losses
   clf_loss: 5.0
@@ -17,7 +17,7 @@ milestones:  # MultiStepLR scheduler params
 gamma: 0.3
 
 image_size: 224  # size of input image
-cue_log_every: 100  # will log cues every cue_log_every batches. If 0, than won't log
+cue_log_every: 500  # will log cues every cue_log_every batches. If 0, than won't log
 #mean:
 #  r: 100
 #  g: 100

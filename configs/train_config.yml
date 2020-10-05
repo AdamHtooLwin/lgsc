@@ -17,7 +17,7 @@ milestones:  # MultiStepLR scheduler params
 gamma: 0.3
 
 image_size: 224  # size of input image
-cue_log_every: 500  # will log cues every cue_log_every batches. If 0, than won't log
+cue_log_every: 1  # will log cues every cue_log_every batches. If 0, than won't log
 #mean:
 #  r: 100
 #  g: 100
@@ -60,12 +60,12 @@ train_df: "/root/datasets/surf/train_labels.csv"  # path to train csv file
 val_df: "/root/datasets/surf/val_labels.csv"  # path to validation csv file
 path_root: "/root/datasets/surf"  # prefix path to your images
 
-batch_size: 32  # batch size for both validation and train dataloader
+batch_size: 16  # batch size for both validation and train dataloader
 num_workers_train: 0  # param for training dataloader
 num_workers_val: 0  # param for validation dataloader
 
 default_root_dir: "/root/lgsc/logs/"  # path to save pytorch_lightning logs
-max_epochs: 15  # max number of epochs to train (if doesn't achieved early stopping)
+max_epochs: 20  # max number of epochs to train (if doesn't achieved early stopping)
 
 use_balance_sampler: True  # You can try overcome class disbalance using balance sampler
 use_focal_loss: False  # You can try use focal loss instead of cross-entropy loss

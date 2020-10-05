@@ -85,21 +85,21 @@ class LightningModel(pl.LightningModule):
             )
         total_loss = clf_loss + reg_loss + trip_loss
 
-        return total_loss
+        return total_loss, clf_loss, reg_loss, trip_loss
 
     def training_step(self, batch, batch_idx):
         input_ = batch[0]
         target = batch[1]
 
         outs, clf_out = self(input_)
-        loss = self.calc_losses(outs, clf_out, target)
+        loss, clf_loss, reg_loss, trip_loss = self.calc_losses(outs, clf_out, target)
 
         if self.hparams.show_imgs:
             imshow(input_, title="Training")
             imshow(outs[-1], title="Training Cues")
 
         if self.log_cues:
-            if (self.current_epoch * batch_idx) % self.hparams.cue_log_every == 0:
+            if self.current_epoch % self.hparams.cue_log_every == 0:
                 images_grid = construct_grid(input_)
                 cues_grid = construct_grid(outs[-1])
 
@@ -109,8 +109,24 @@ class LightningModel(pl.LightningModule):
                 self.logger.experiment.add_image(
                     "training_images", images_grid, self.current_epoch * batch_idx
                 )
+        # if self.log_cues:
+        #     if (self.current_epoch * batch_idx) % self.hparams.cue_log_every == 0:
+        #         images_grid = construct_grid(input_)
+        #         cues_grid = construct_grid(outs[-1])
+        #
+        #         self.logger.experiment.add_image(
+        #             "training_cues", cues_grid, self.current_epoch * batch_idx
+        #         )
+        #         self.logger.experiment.add_image(
+        #             "training_images", images_grid, self.current_epoch * batch_idx
+        #         )
 
-        tensorboard_logs = {"train_loss": loss}
+        tensorboard_logs = {
+            "train_loss": loss,
+            "clf_loss": clf_loss,
+            "reg_loss": reg_loss,
+            "trip_loss": trip_loss
+        }
         return {"loss": loss, "log": tensorboard_logs}
 
     def training_epoch_end(self, outputs):
@@ -128,30 +144,39 @@ class LightningModel(pl.LightningModule):
             imshow(batch[0], title="Validation")
 
         outs, clf_out = self(input_)
-        loss = self.calc_losses(outs, clf_out, target)
+        loss, clf_loss, reg_loss, trip_loss = self.calc_losses(outs, clf_out, target)
         # result = pl.EvalResult()
         # result.log('val_loss', loss, on_step=True, on_epoch=True, prog_bar=True, logger=True)
         # result.log('score', clf_out.cpu().numpy(), on_step=True, on_epoch=True, prog_bar=True, logger=True)
         # result.log('target', target.cpu().numpy(), on_step=True, on_epoch=True, prog_bar=True, logger=True)
 
+        tensorboard_logs = {
+            "val_loss": loss,
+            "val_clf_loss": clf_loss,
+            "val_reg_loss": reg_loss,
+            "val_trip_loss": trip_loss,
+        }
+
         val_dict = {
             "val_loss": loss,
+            "val_clf_loss": clf_loss,
+            "val_reg_loss": reg_loss,
+            "val_trip_loss": trip_loss,
             "score": clf_out.cpu().numpy(),
             "target": target.cpu().numpy(),
+            "log": tensorboard_logs
         }
 
         if self.log_cues:
-            if (
-                self.current_epoch * batch_idx
-            ) % self.hparams.cue_log_every == 0:
-                images_grid, cues_grid = self.grid_maker(
-                    input_.detach().cpu()[:6], outs[-1][:6]
+            if self.current_epoch % self.hparams.cue_log_every == 0:
+                images_grid = construct_grid(input_)
+                cues_grid = construct_grid(outs[-1])
+
+                self.logger.experiment.add_image(
+                    "val_cues", cues_grid, self.current_epoch * batch_idx
                 )
                 self.logger.experiment.add_image(
-                    "validation_cues", cues_grid, self.current_epoch * batch_idx
-                )
-                self.logger.experiment.add_image(
-                    "validation_images", images_grid, self.current_epoch * batch_idx
+                    "val_images", images_grid, self.current_epoch * batch_idx
                 )
 
         return val_dict

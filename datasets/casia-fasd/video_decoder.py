@@ -12,6 +12,31 @@ def make_folder(folder):
         os.makedirs(folder)
 
 
+def delete():
+    labels_file = "/root/datasets/casia-fasd/train_labels.csv"
+
+    data_df = pd.read_csv(labels_file)
+    print("Initial length: ", len(data_df))
+
+    pbar = tqdm(range(len(data_df)))
+    for index in pbar:
+        path = data_df.loc[index].path
+        pbar.set_description("Processing index %s" % index)
+
+        video = path.split("/")[-2]
+        file = path.split("/")[-1]
+
+        if "HR" in video and file == "1.jpg":
+            data_df = data_df.drop(index)
+
+            if os.path.exists(path):
+                os.remove(path)
+
+    output_path = "/root/datasets/casia-fasd/train_labels_filtered.csv"
+    print("Final length: ", len(data_df))
+    data_df.to_csv(output_path, index=False)
+
+
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(
             description='Extract frames from CASIA-FASD videos.',
@@ -70,8 +95,9 @@ if __name__ == "__main__":
                 data['path'].append(file_name)
                 data['target'].append(label)
 
-                cv2.imwrite(file_name, image)  # save frame as JPEG file
                 success, image = vidcap.read()
+                # skipping first frame; if want 1st frame move up
+                cv2.imwrite(file_name, image)  # save frame as JPEG file
                 # print('Read a new frame: ', success)
                 count += 1
 

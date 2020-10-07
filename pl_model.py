@@ -121,20 +121,25 @@ class LightningModel(pl.LightningModule):
         #             "training_images", images_grid, self.current_epoch * batch_idx
         #         )
 
-        tensorboard_logs = {
-            "train_loss": loss,
-            "clf_loss": clf_loss,
-            "reg_loss": reg_loss,
-            "trip_loss": trip_loss
-        }
-        return {"loss": loss, "log": tensorboard_logs}
+        self.logger.experiment.add_scalar('train_loss', loss, self.current_epoch * len(self.train_dataloader()) + batch_idx)
+        self.logger.experiment.add_scalar('clf_loss', clf_loss, self.current_epoch * len(self.train_dataloader()) + batch_idx)
+        self.logger.experiment.add_scalar('reg_loss', reg_loss, self.current_epoch * len(self.train_dataloader()) + batch_idx)
+        self.logger.experiment.add_scalar('trip_loss', trip_loss, self.current_epoch * len(self.train_dataloader()) + batch_idx)
+
+        # tensorboard_logs = {
+        #     "train_loss": loss,
+        #     "clf_loss": clf_loss,
+        #     "reg_loss": reg_loss,
+        #     "trip_loss": trip_loss
+        # }
+
+        return {"loss": loss}
 
     def training_epoch_end(self, outputs):
         avg_loss = torch.stack([x["loss"] for x in outputs]).mean()
-        tensorboard_logs = {
-            "train_avg_loss": avg_loss,
-        }
-        return {"train_avg_loss": avg_loss, "log": tensorboard_logs}
+        self.logger.experiment.add_scalar("train_avg_loss", avg_loss, self.current_epoch)
+
+        return {"train_avg_loss": avg_loss}
 
     def validation_step(self, batch, batch_idx):
         input_ = batch[0]
@@ -145,17 +150,11 @@ class LightningModel(pl.LightningModule):
 
         outs, clf_out = self(input_)
         loss, clf_loss, reg_loss, trip_loss = self.calc_losses(outs, clf_out, target)
-        # result = pl.EvalResult()
-        # result.log('val_loss', loss, on_step=True, on_epoch=True, prog_bar=True, logger=True)
-        # result.log('score', clf_out.cpu().numpy(), on_step=True, on_epoch=True, prog_bar=True, logger=True)
-        # result.log('target', target.cpu().numpy(), on_step=True, on_epoch=True, prog_bar=True, logger=True)
 
-        tensorboard_logs = {
-            "val_loss": loss,
-            "val_clf_loss": clf_loss,
-            "val_reg_loss": reg_loss,
-            "val_trip_loss": trip_loss,
-        }
+        self.logger.experiment.add_scalar("val_loss", loss, self.current_epoch * len(self.val_dataloader()) + batch_idx)
+        self.logger.experiment.add_scalar("val_clf_loss", clf_loss, self.current_epoch * len(self.val_dataloader()) + batch_idx)
+        self.logger.experiment.add_scalar("val_reg_loss", reg_loss, self.current_epoch * len(self.val_dataloader()) + batch_idx)
+        self.logger.experiment.add_scalar("val_trip_loss", trip_loss, self.current_epoch * len(self.val_dataloader()) + batch_idx)
 
         val_dict = {
             "val_loss": loss,
@@ -164,7 +163,6 @@ class LightningModel(pl.LightningModule):
             "val_trip_loss": trip_loss,
             "score": clf_out.cpu().numpy(),
             "target": target.cpu().numpy(),
-            "log": tensorboard_logs
         }
 
         if self.log_cues:
@@ -189,16 +187,16 @@ class LightningModel(pl.LightningModule):
         metrics_, best_thr, acc = eval_from_scores(scores, targets)
         acer, apcer, npcer = metrics_
         roc_auc = metrics.roc_auc_score(targets, scores)
-        tensorboard_logs = {
-            "val_loss": avg_loss,
-            "val_roc_auc": roc_auc,
-            "val_acer": acer,
-            "val_apcer": apcer,
-            "val_npcer": npcer,
-            "val_acc": acc,
-            "val_thr": best_thr,
-        }
-        return {"val_loss": avg_loss, "log": tensorboard_logs}
+
+        self.logger.experiment.add_scalar("val_avg_loss", avg_loss, self.current_epoch)
+        self.logger.experiment.add_scalar("val_roc_auc", roc_auc, self.current_epoch)
+        self.logger.experiment.add_scalar("val_acer", acer, self.current_epoch)
+        self.logger.experiment.add_scalar("val_apcer", apcer, self.current_epoch)
+        self.logger.experiment.add_scalar("val_npcer", npcer, self.current_epoch)
+        self.logger.experiment.add_scalar("val_acc", acc, self.current_epoch)
+        self.logger.experiment.add_scalar("val_thr", best_thr, self.current_epoch)
+
+        return {"val_loss": avg_loss}
 
     def configure_optimizers(self):
         optim = torch.optim.Adam(self.parameters(), lr=self.hparams.lr)

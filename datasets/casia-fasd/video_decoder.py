@@ -13,6 +13,11 @@ def make_folder(folder):
 
 
 def delete():
+    """
+    Function to delete the first frame in every video
+    Should not be needed in the latest frame extractor.
+    :return:
+    """
     labels_file = "/root/datasets/casia-fasd/train_labels.csv"
 
     data_df = pd.read_csv(labels_file)
@@ -90,14 +95,14 @@ if __name__ == "__main__":
             success, image = vidcap.read()
             count = 1
             while success and count <= args.frames:
-                file_name = video_folder + "/%d.jpg" % count
+                if not count == 1:
+                    file_name = video_folder + "/%d.jpg" % count
 
-                data['path'].append(file_name)
-                data['target'].append(label)
+                    data['path'].append(file_name)
+                    data['target'].append(label)
+                    cv2.imwrite(file_name, image)  # save frame as JPEG file
 
                 success, image = vidcap.read()
-                # skipping first frame; if want 1st frame move up
-                cv2.imwrite(file_name, image)  # save frame as JPEG file
                 # print('Read a new frame: ', success)
                 count += 1
 

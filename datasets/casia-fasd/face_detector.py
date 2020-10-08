@@ -29,7 +29,7 @@ if __name__ == "__main__":
     pbar = tqdm(range(len(labels_df)))
     for index in pbar:
         path = labels_df.iloc[index].path
-        pbar.set_description("Processing image ", path)
+        pbar.set_description("Processing image %s" % path)
         image = Image.open(path)
 
         cropped_image = face_detector(image, save_path=path)

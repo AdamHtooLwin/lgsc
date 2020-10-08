@@ -5,7 +5,7 @@ show_imgs: False
 loss_coef:  # coefficients for losses
   clf_loss: 5.0
   reg_loss: 5.0
-  trip_loss: 1.0
+  trip_loss: 1
 
 # TODO: config for optimizer
 lr: 0.0005  # optimizer lr
@@ -56,16 +56,16 @@ std:
 #  factor: 0.709
 #  device: *device
 
-train_df: "/root/datasets/surf/train_labels.csv"  # path to train csv file
-val_df: "/root/datasets/surf/val_labels.csv"  # path to validation csv file
-path_root: "/root/datasets/surf"  # prefix path to your images
+train_df: "/root/datasets/casia-fasd/train_labels.csv"  # path to train csv file
+val_df: "/root/datasets/casia-fasd/test_labels.csv"  # path to validation csv file
+path_root: "/root/datasets/casia-fasd"  # prefix path to your images
 
-batch_size: 32  # batch size for both validation and train dataloader
+batch_size: 16  # batch size for both validation and train dataloader
 num_workers_train: 0  # param for training dataloader
 num_workers_val: 0  # param for validation dataloader
 
-default_root_dir: "/root/lgsc/logs/"  # path to save pytorch_lightning logs
+default_root_dir: "/root/lgsc/logs/casia-fasd"  # path to save pytorch_lightning logs
 max_epochs: 20  # max number of epochs to train (if doesn't achieved early stopping)
 
-use_balance_sampler: True  # You can try overcome class disbalance using balance sampler
+use_balance_sampler: False  # You can try overcome class disbalance using balance sampler
 use_focal_loss: False  # You can try use focal loss instead of cross-entropy loss

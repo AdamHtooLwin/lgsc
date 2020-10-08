@@ -7,7 +7,7 @@ import pytorch_lightning as pl
 import os
 import matplotlib.pyplot as plt
 
-from pl_model import LightningModel
+from pl_model_fasd import LightningModel
 
 
 # # Seems we have to smake a plot as the first thing for plots to work at all?
@@ -30,7 +30,8 @@ if __name__ == "__main__":
     if not os.path.isdir(configs.default_root_dir):
         os.makedirs(configs.default_root_dir)
 
-    tb_logger = pl_loggers.TensorBoardLogger('logs/tensorboard/')
+    log_folder = configs.default_root_dir + "/tensorboard/"
+    tb_logger = pl_loggers.TensorBoardLogger(log_folder)
     checkpoint_callback = ModelCheckpoint(
         save_last=True,
         save_top_k=-1,
@@ -45,7 +46,7 @@ if __name__ == "__main__":
         fast_dev_run=False,
         checkpoint_callback=checkpoint_callback,
         logger=tb_logger,
-        gpus=[1],
+        gpus=1,
         # distributed_backend="ddp"
     )
     trainer.fit(model)

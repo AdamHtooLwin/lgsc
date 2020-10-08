@@ -13,7 +13,7 @@ from catalyst.contrib.nn.criterion.focal import FocalLossMultiClass
 import pytorch_lightning as pl
 import matplotlib.pyplot as plt
 
-from datasets import Dataset, get_test_augmentations, get_train_augmentations
+from datasets import FASD, get_test_augmentations, get_train_augmentations
 from models.scan import SCAN
 from loss import TripletLoss
 from metrics import eval_from_scores
@@ -41,7 +41,7 @@ class LightningModel(pl.LightningModule):
         super().__init__()
         self.hparams = hparams
         self.model = SCAN()
-        self.triplet_loss = TripletLoss(margin=0.2)
+        self.triplet_loss = TripletLoss()
         self.log_cues = not self.hparams.cue_log_every == 0
         self.grid_maker = GridMaker()
         if self.hparams.use_focal_loss:
@@ -215,7 +215,7 @@ class LightningModel(pl.LightningModule):
             face_detector = self.hparams.face_detector
         except AttributeError:
             face_detector = None
-        dataset = Dataset(
+        dataset = FASD(
             df, self.hparams.path_root, transforms, face_detector=face_detector
         )
         if self.hparams.use_balance_sampler:
@@ -244,13 +244,13 @@ class LightningModel(pl.LightningModule):
             face_detector = self.hparams.face_detector
         except AttributeError:
             face_detector = None
-        dataset = Dataset(
+        dataset = FASD(
             df, self.hparams.path_root, transforms, face_detector=face_detector
         )
         dataloader = torch.utils.data.DataLoader(
             dataset,
             batch_size=self.hparams.batch_size,
             num_workers=self.hparams.num_workers_val,
-            shuffle=False,
+            shuffle=True,
         )
         return dataloader

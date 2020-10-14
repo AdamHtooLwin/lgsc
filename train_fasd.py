@@ -46,7 +46,7 @@ if __name__ == "__main__":
         fast_dev_run=False,
         checkpoint_callback=checkpoint_callback,
         logger=tb_logger,
-        gpus=1,
+        gpus=[3],
         # distributed_backend="ddp"
     )
     trainer.fit(model)

@@ -12,7 +12,6 @@ class SCAN(nn.Module):
         self.clf = ResNet18Classifier(dropout=dropout)
 
     def forward(self, x):
-        x = x.float()
         outs = self.backbone(x)
         outs = self.decoder(outs)
 

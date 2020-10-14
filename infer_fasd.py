@@ -10,7 +10,7 @@ import torch
 from torch.utils.data import DataLoader
 
 from pl_model import LightningModel
-from datasets import get_test_augmentations, Dataset
+from datasets import get_test_augmentations, FASD
 from metrics import eval_from_scores
 
 
@@ -30,7 +30,7 @@ def prepare_infer_dataloader(args: Namespace) -> DataLoader:
     except AttributeError:
         face_detector = None
 
-    dataset = Dataset(
+    dataset = FASD(
         df, args.root, transforms, face_detector, args.with_labels
     )
     dataloader = DataLoader(

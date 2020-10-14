@@ -98,19 +98,18 @@ class LightningModel(pl.LightningModule):
             imshow(input_, title="Training")
             imshow(outs[-1], title="Training Cues")
 
-        if self.log_cues:
-            if self.current_epoch % self.hparams.cue_log_every == 0:
-                images_grid = construct_grid(input_)
-                cues_grid = construct_grid(outs[-1])
+        scores = []
+        cues = outs[-1]
+        for i in range(cues.shape[0]):
+            score = 1.0 - cues[i, ].mean().cpu().item()
+            scores.append(score)
 
-                self.logger.experiment.add_image(
-                    "training_cues", cues_grid, self.current_epoch * batch_idx
-                )
-                self.logger.experiment.add_image(
-                    "training_images", images_grid, self.current_epoch * batch_idx
-                )
+        metrics_, best_thr, acc = eval_from_scores(np.array(scores), target.cpu().long().numpy())
+        acer, apcer, npcer = metrics_
+        # roc_auc = metrics.roc_auc_score(target.cpu(), scores)
+
         # if self.log_cues:
-        #     if (self.current_epoch * batch_idx) % self.hparams.cue_log_every == 0:
+        #     if self.current_epoch % self.hparams.cue_log_every == 0:
         #         images_grid = construct_grid(input_)
         #         cues_grid = construct_grid(outs[-1])
         #
@@ -121,10 +120,28 @@ class LightningModel(pl.LightningModule):
         #             "training_images", images_grid, self.current_epoch * batch_idx
         #         )
 
-        self.logger.experiment.add_scalar('train_loss', loss, self.current_epoch * len(self.train_dataloader()) + batch_idx)
-        self.logger.experiment.add_scalar('clf_loss', clf_loss, self.current_epoch * len(self.train_dataloader()) + batch_idx)
-        self.logger.experiment.add_scalar('reg_loss', reg_loss, self.current_epoch * len(self.train_dataloader()) + batch_idx)
-        self.logger.experiment.add_scalar('trip_loss', trip_loss, self.current_epoch * len(self.train_dataloader()) + batch_idx)
+        if self.log_cues:
+            if (self.current_epoch * batch_idx) % self.hparams.cue_log_every == 0:
+                images_grid = construct_grid(input_)
+                cues_grid = construct_grid(outs[-1])
+
+                self.logger.experiment.add_image(
+                    "training_cues", cues_grid, self.current_epoch * batch_idx
+                )
+                self.logger.experiment.add_image(
+                    "training_images", images_grid, self.current_epoch * batch_idx
+                )
+
+        self.logger.experiment.add_scalar('Training Losses/Loss', loss, self.current_epoch * len(self.train_dataloader()) + batch_idx)
+        self.logger.experiment.add_scalar('Training Losses/clf_loss', clf_loss, self.current_epoch * len(self.train_dataloader()) + batch_idx)
+        self.logger.experiment.add_scalar('Training Losses/reg_loss', reg_loss, self.current_epoch * len(self.train_dataloader()) + batch_idx)
+        self.logger.experiment.add_scalar('Training Losses/trip_loss', trip_loss, self.current_epoch * len(self.train_dataloader()) + batch_idx)
+
+        self.logger.experiment.add_scalar('Training metrics/Accuracy', acc, self.current_epoch * len(self.train_dataloader()) + batch_idx)
+        self.logger.experiment.add_scalar('Training metrics/ACER', acer, self.current_epoch * len(self.train_dataloader()) + batch_idx)
+        self.logger.experiment.add_scalar('Training metrics/APCER', apcer, self.current_epoch * len(self.train_dataloader()) + batch_idx)
+        self.logger.experiment.add_scalar('Training metrics/NPCER', npcer, self.current_epoch * len(self.train_dataloader()) + batch_idx)
+        # self.logger.experiment.add_scalar('Training metrics/ROC-AUC', roc_auc, self.current_epoch * len(self.train_dataloader()) + batch_idx)
 
         # tensorboard_logs = {
         #     "train_loss": loss,
@@ -133,11 +150,27 @@ class LightningModel(pl.LightningModule):
         #     "trip_loss": trip_loss
         # }
 
-        return {"loss": loss}
+        return {
+            "loss": loss,
+            "train_acc": acc,
+            "train_acer": acer,
+            "train_apcer": apcer,
+            "train_npcer": npcer,
+        }
 
     def training_epoch_end(self, outputs):
         avg_loss = torch.stack([x["loss"] for x in outputs]).mean()
-        self.logger.experiment.add_scalar("train_avg_loss", avg_loss, self.current_epoch)
+        avg_acc = np.mean([x['train_acc'] for x in outputs])
+        avg_acer = np.mean([x['train_acer'] for x in outputs])
+        avg_apcer = np.mean([x['train_apcer'] for x in outputs])
+        avg_npcer = np.mean([x['train_npcer'] for x in outputs])
+
+
+        self.logger.experiment.add_scalar("Train Avg/Loss", avg_loss, self.current_epoch)
+        self.logger.experiment.add_scalar("Train Avg/Accuracy", avg_acc, self.current_epoch)
+        self.logger.experiment.add_scalar("Train Avg/ACER", avg_acer, self.current_epoch)
+        self.logger.experiment.add_scalar("Train Avg/APCER", avg_apcer, self.current_epoch)
+        self.logger.experiment.add_scalar("Train Avg/NPCER", avg_npcer, self.current_epoch)
 
         return {"train_avg_loss": avg_loss}
 
@@ -151,22 +184,40 @@ class LightningModel(pl.LightningModule):
         outs, clf_out = self(input_)
         loss, clf_loss, reg_loss, trip_loss = self.calc_losses(outs, clf_out, target)
 
-        self.logger.experiment.add_scalar("val_loss", loss, self.current_epoch * len(self.val_dataloader()) + batch_idx)
-        self.logger.experiment.add_scalar("val_clf_loss", clf_loss, self.current_epoch * len(self.val_dataloader()) + batch_idx)
-        self.logger.experiment.add_scalar("val_reg_loss", reg_loss, self.current_epoch * len(self.val_dataloader()) + batch_idx)
-        self.logger.experiment.add_scalar("val_trip_loss", trip_loss, self.current_epoch * len(self.val_dataloader()) + batch_idx)
+        scores = []
+        cues = outs[-1]
+        for i in range(cues.shape[0]):
+            score = 1.0 - cues[i, ].mean().cpu().item()
+            scores.append(score)
+
+        metrics_, best_thr, acc = eval_from_scores(np.array(scores), target.cpu().long().numpy())
+        acer, apcer, npcer = metrics_
+        # roc_auc = metrics.roc_auc_score(target.cpu(), scores)
+
+        self.logger.experiment.add_scalar("Validation/loss", loss, self.current_epoch * len(self.val_dataloader()) + batch_idx)
+        self.logger.experiment.add_scalar("Validation/clf_loss", clf_loss, self.current_epoch * len(self.val_dataloader()) + batch_idx)
+        self.logger.experiment.add_scalar("Validation/reg_loss", reg_loss, self.current_epoch * len(self.val_dataloader()) + batch_idx)
+        self.logger.experiment.add_scalar("Validation/trip_loss", trip_loss, self.current_epoch * len(self.val_dataloader()) + batch_idx)
+
+        self.logger.experiment.add_scalar('Validation metrics/Accuracy', acc, self.current_epoch * len(self.train_dataloader()) + batch_idx)
+        self.logger.experiment.add_scalar('Validation metrics/ACER', acer, self.current_epoch * len(self.train_dataloader()) + batch_idx)
+        self.logger.experiment.add_scalar('Validation metrics/APCER', apcer, self.current_epoch * len(self.train_dataloader()) + batch_idx)
+        self.logger.experiment.add_scalar('Validation metrics/NPCER', npcer, self.current_epoch * len(self.train_dataloader()) + batch_idx)
+        # self.logger.experiment.add_scalar('Validation metrics/ROC-AUC', roc_auc, self.current_epoch * len(self.train_dataloader()) + batch_idx)
 
         val_dict = {
             "val_loss": loss,
             "val_clf_loss": clf_loss,
             "val_reg_loss": reg_loss,
             "val_trip_loss": trip_loss,
-            "score": clf_out.cpu().numpy(),
-            "target": target.cpu().numpy(),
+            "val_acc": acc,
+            "val_acer": acer,
+            "val_apcer": apcer,
+            "val_npcer": npcer,
         }
 
         if self.log_cues:
-            if self.current_epoch % self.hparams.cue_log_every == 0:
+            if (self.current_epoch * batch_idx) % self.hparams.cue_log_every == 0:
                 images_grid = construct_grid(input_)
                 cues_grid = construct_grid(outs[-1])
 
@@ -182,19 +233,32 @@ class LightningModel(pl.LightningModule):
     # outputs of all the training steps -> list of dicts
     def validation_epoch_end(self, outputs):
         avg_loss = torch.stack([x["val_loss"] for x in outputs]).mean()
-        targets = np.hstack([output["target"] for output in outputs])
-        scores = np.vstack([output["score"] for output in outputs])[:, 1]
-        metrics_, best_thr, acc = eval_from_scores(scores, targets)
-        acer, apcer, npcer = metrics_
-        roc_auc = metrics.roc_auc_score(targets, scores)
 
-        self.logger.experiment.add_scalar("val_avg_loss", avg_loss, self.current_epoch)
-        self.logger.experiment.add_scalar("val_roc_auc", roc_auc, self.current_epoch)
-        self.logger.experiment.add_scalar("val_acer", acer, self.current_epoch)
-        self.logger.experiment.add_scalar("val_apcer", apcer, self.current_epoch)
-        self.logger.experiment.add_scalar("val_npcer", npcer, self.current_epoch)
-        self.logger.experiment.add_scalar("val_acc", acc, self.current_epoch)
-        self.logger.experiment.add_scalar("val_thr", best_thr, self.current_epoch)
+        avg_acc = np.mean([x['val_acc'] for x in outputs])
+        avg_acer = np.mean([x['val_acer'] for x in outputs])
+        avg_apcer = np.mean([x['val_apcer'] for x in outputs])
+        avg_npcer = np.mean([x['val_npcer'] for x in outputs])
+        # avg_npcer = torch.stack([torch.Tensor(x["val_npcer"]) for x in outputs]).mean()
+
+        self.logger.experiment.add_scalar("Val Avg/Loss", avg_loss, self.current_epoch)
+        self.logger.experiment.add_scalar("Val Avg/Accuracy", avg_acc, self.current_epoch)
+        self.logger.experiment.add_scalar("Val Avg/ACER", avg_acer, self.current_epoch)
+        self.logger.experiment.add_scalar("Val Avg/APCER", avg_apcer, self.current_epoch)
+        self.logger.experiment.add_scalar("Val Avg/NPCER", avg_npcer, self.current_epoch)
+
+
+        # targets = np.hstack([output["target"] for output in outputs])
+        # scores = np.vstack([output["score"] for output in outputs])[:, 1]
+        # metrics_, best_thr, acc = eval_from_scores(scores, targets)
+        # acer, apcer, npcer = metrics_
+        # roc_auc = metrics.roc_auc_score(targets, scores)
+
+        # self.logger.experiment.add_scalar("val_roc_auc", roc_auc, self.current_epoch)
+        # self.logger.experiment.add_scalar("val_acer", acer, self.current_epoch)
+        # self.logger.experiment.add_scalar("val_apcer", apcer, self.current_epoch)
+        # self.logger.experiment.add_scalar("val_npcer", npcer, self.current_epoch)
+        # self.logger.experiment.add_scalar("val_acc", acc, self.current_epoch)
+        # self.logger.experiment.add_scalar("val_thr", best_thr, self.current_epoch)
 
         return {"val_loss": avg_loss}
 
@@ -210,21 +274,40 @@ class LightningModel(pl.LightningModule):
         std = (self.hparams.std['r'], self.hparams.std['g'], self.hparams.std['b'])
 
         transforms = get_train_augmentations(self.hparams.image_size, mean=mean, std=std)
+
         df = pd.read_csv(self.hparams.train_df)
+
         try:
             face_detector = self.hparams.face_detector
         except AttributeError:
             face_detector = None
+
         dataset = FASD(
             df, self.hparams.path_root, transforms, face_detector=face_detector
         )
+
         if self.hparams.use_balance_sampler:
             labels = list(df.target.values)
             sampler = BalanceClassSampler(labels, mode="upsampling")
             shuffle = False
+
+        elif self.hparams.use_weighted_sampler:
+            class_sample_count = [self.hparams.data['train']['live'], self.hparams.data['train']['fake']]
+            weights = 1 / torch.Tensor(class_sample_count)
+
+            labels = list(df.target.values)
+            samples_weights = weights[labels]
+
+            sampler = torch.utils.data.sampler.WeightedRandomSampler(samples_weights, len(samples_weights))
+            shuffle = False
+
+        elif self.hparams.use_balance_sampler and self.hparams.use_weighted_sampler:
+            raise Exception("Cannot have two types of samplers")
+
         else:
             sampler = None
             shuffle = True
+
         dataloader = torch.utils.data.DataLoader(
             dataset,
             batch_size=self.hparams.batch_size,
@@ -232,6 +315,7 @@ class LightningModel(pl.LightningModule):
             sampler=sampler,
             shuffle=shuffle,
         )
+
         return dataloader
 
     def val_dataloader(self):
@@ -239,18 +323,37 @@ class LightningModel(pl.LightningModule):
         std = (self.hparams.std['r'], self.hparams.std['g'], self.hparams.std['b'])
 
         transforms = get_test_augmentations(self.hparams.image_size, mean=mean, std=std)
+
         df = pd.read_csv(self.hparams.val_df)
+
         try:
             face_detector = self.hparams.face_detector
         except AttributeError:
             face_detector = None
+
         dataset = FASD(
             df, self.hparams.path_root, transforms, face_detector=face_detector
         )
+
+        shuffle = False
+        sampler = None
+
+        if self.hparams.use_weighted_sampler:
+            class_sample_count = [self.hparams.data['train']['live'], self.hparams.data['train']['fake']]
+            weights = 1. / torch.Tensor(class_sample_count)
+
+            labels = list(df.target.values)
+            samples_weights = weights[labels]
+
+            sampler = torch.utils.data.sampler.WeightedRandomSampler(samples_weights, len(samples_weights))
+            shuffle = False
+
         dataloader = torch.utils.data.DataLoader(
             dataset,
             batch_size=self.hparams.batch_size,
             num_workers=self.hparams.num_workers_val,
-            shuffle=True,
+            shuffle=shuffle,
+            sampler=sampler
         )
+
         return dataloader

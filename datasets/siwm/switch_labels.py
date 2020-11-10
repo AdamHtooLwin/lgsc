@@ -10,10 +10,11 @@ Script to switch labels
 
 if __name__ == "__main__":
     print("Starting...")
-    default_output_path = '/root/datasets/siwm/labels_inverted.csv'
+    default_output_folder = '/root/datasets/siwm/'
+    default_output_path = default_output_folder + 'labels_inverted.csv'
 
-    if not os.path.isdir(default_output_path):
-        os.makedirs(default_output_path)
+    if not os.path.isdir(default_output_folder):
+        os.makedirs(default_output_folder)
 
     parser = argparse.ArgumentParser()
     parser.add_argument("-f", "--file_path", required=True, help="Absolute path to labels csv.")

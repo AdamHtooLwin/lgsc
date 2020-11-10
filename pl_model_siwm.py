@@ -165,7 +165,6 @@ class LightningModel(pl.LightningModule):
         avg_apcer = np.mean([x['train_apcer'] for x in outputs])
         avg_npcer = np.mean([x['train_npcer'] for x in outputs])
 
-
         self.logger.experiment.add_scalar("Train Avg/Loss", avg_loss, self.current_epoch)
         self.logger.experiment.add_scalar("Train Avg/Accuracy", avg_acc, self.current_epoch)
         self.logger.experiment.add_scalar("Train Avg/ACER", avg_acer, self.current_epoch)

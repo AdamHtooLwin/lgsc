@@ -45,7 +45,7 @@ if __name__ == "__main__":
     test_live_path = args.folder_path + "/test/live"
     test_live_folder_list = glob.glob(test_live_path + '/*')
     test_spoof_path = args.folder_path + "/test/spoof"
-    test_spoof_folder_list = glob.glob(train_spoof_path + '/*')
+    test_spoof_folder_list = glob.glob(test_spoof_path + '/*')
     
     print("Detected train live images: ", len(train_live_folder_list))
     print("Detected train spoof images: ", len(train_spoof_folder_list))
@@ -83,12 +83,14 @@ if __name__ == "__main__":
         'target': []
     }
 
+    # Val Live
     pbar = tqdm(val_live_folder_list, desc="Val Live")
     for folder in pbar:
         image_path = glob.glob(folder + '/*.png')[0]
         val_data['path'].append(image_path)
         val_data['target'].append(0)
 
+    # Val spoof
     pbar = tqdm(val_spoof_folder_list, desc="Val Spoof")
     for folder in pbar:
         image_path = glob.glob(folder + '/*.png')[0]
@@ -105,12 +107,14 @@ if __name__ == "__main__":
         'target': []
     }
 
+    # Test Live
     pbar = tqdm(test_live_folder_list, desc="Test Live")
     for folder in pbar:
         image_path = glob.glob(folder + '/*.png')[0]
         test_data['path'].append(image_path)
         test_data['target'].append(0)
 
+    # Test Spoof
     pbar = tqdm(test_spoof_folder_list, "Test Spoof")
     for folder in pbar:
         image_path = glob.glob(folder + '/*.png')[0]

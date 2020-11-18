@@ -37,8 +37,8 @@ batch_size: 64  # batch size for infer dataloader
 #  factor: 0.709
 #  device: *device
 
-infer_df: "/root/datasets/siwm/val_labels_inverted.csv"  # path to csv file with test data
+infer_df: "/root/datasets/casia-fasd/test_labels.csv"  # path to csv file with test data
 root: "/root/datasets/siwm"  # prefix path to your images
-out_file:  "/root/lgsc/results/siwm/version_2_test.txt"  # path to file you want save your results
+out_file:  "/root/lgsc/results/siwm/version_2_fasd_test.txt"  # path to file you want save your results
 
 use_weighted_sampler: False  # You can try overcome class disbalance using weighted sampler

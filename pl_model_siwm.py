@@ -40,7 +40,7 @@ class LightningModel(pl.LightningModule):
     def __init__(self, hparams):
         super().__init__()
         self.hparams = hparams
-        self.model = SCAN()
+        self.model = SCAN(pretrained=False)
         self.triplet_loss = TripletLoss()
         self.log_cues = not self.hparams.cue_log_every == 0
         self.grid_maker = GridMaker()
@@ -107,18 +107,6 @@ class LightningModel(pl.LightningModule):
         metrics_, best_thr, acc = eval_from_scores(np.array(scores), target.cpu().long().numpy())
         acer, apcer, npcer = metrics_
         # roc_auc = metrics.roc_auc_score(target.cpu(), scores)
-
-        # if self.log_cues:
-        #     if self.current_epoch % self.hparams.cue_log_every == 0:
-        #         images_grid = construct_grid(input_)
-        #         cues_grid = construct_grid(outs[-1])
-        #
-        #         self.logger.experiment.add_image(
-        #             "training_cues", cues_grid, self.current_epoch * batch_idx
-        #         )
-        #         self.logger.experiment.add_image(
-        #             "training_images", images_grid, self.current_epoch * batch_idx
-        #         )
 
         if self.log_cues:
             if (self.current_epoch * batch_idx) % self.hparams.cue_log_every == 0:

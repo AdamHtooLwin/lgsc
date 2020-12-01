@@ -73,7 +73,7 @@ train_df: "/root/datasets/siwm/train_labels_inverted.csv"  # path to train csv f
 val_df: "/root/datasets/siwm/val_labels_inverted.csv"  # path to validation csv file
 path_root: "/root/datasets/siwm"  # prefix path to your images
 
-batch_size: 64  # batch size for both validation and train dataloader
+batch_size: 32  # batch size for both validation and train dataloader
 num_workers_train: 0  # param for training dataloader
 num_workers_val: 0  # param for validation dataloader
 

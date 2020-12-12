@@ -16,7 +16,7 @@ if __name__ == "__main__":
     print("Starting...")
 
     parser = argparse.ArgumentParser(
-        description='Build protocol splits for 1 and 2. Files should be named train/dev/test.csv',
+        description='Build protocol splits for 3 and 4.',
         formatter_class=argparse.ArgumentDefaultsHelpFormatter
     )
 
@@ -42,10 +42,18 @@ if __name__ == "__main__":
     make_folder(protocol_root_folder)
     make_folder(protocol_folder)
 
-    # protocol 1
-    p1_train_df = pd.read_csv(protocol_folder + '/Train.txt', sep=',', names=['label', 'video'])
-    p1_dev_df = pd.read_csv(protocol_folder + '/Dev.txt', sep=',', names=['label', 'video'])
-    p1_test_df = pd.read_csv(protocol_folder + '/Test.txt', sep=',', names=['label', 'video'])
+    p1_train_df = pd.DataFrame()
+    p1_dev_df = pd.DataFrame()
+    p1_test_df = pd.DataFrame()
+    
+    for i in range(1, 7):
+        train_df = pd.read_csv(protocol_folder + '/Train_' + str(i) + '.txt', sep=',', names=['label', 'video'])
+        dev_df = pd.read_csv(protocol_folder + '/Dev_' + str(i) + '.txt', sep=',', names=['label', 'video'])
+        test_df = pd.read_csv(protocol_folder + '/Test_' + str(i) + '.txt', sep=',', names=['label', 'video'])
+
+        p1_train_df = p1_train_df.append(train_df, ignore_index=True)
+        p1_dev_df = p1_dev_df.append(dev_df, ignore_index=True)
+        p1_test_df = p1_test_df.append(test_df, ignore_index=True)
 
     p1_output_csvs = [
         protocol_folder + "/train.csv",

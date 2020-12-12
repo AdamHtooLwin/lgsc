@@ -31,6 +31,7 @@ if __name__ == "__main__":
         os.makedirs(configs.default_root_dir)
 
     log_folder = configs.default_root_dir + "/tensorboard/"
+    gpu = int(configs.gpu)
     tb_logger = pl_loggers.TensorBoardLogger(log_folder)
     checkpoint_callback = ModelCheckpoint(
         save_last=True,
@@ -46,7 +47,7 @@ if __name__ == "__main__":
         fast_dev_run=False,
         checkpoint_callback=checkpoint_callback,
         logger=tb_logger,
-        gpus=[2],
+        gpus=[gpu],
         # distributed_backend="ddp"
     )
     trainer.fit(model)

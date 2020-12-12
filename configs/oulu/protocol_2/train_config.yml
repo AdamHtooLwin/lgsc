@@ -1,13 +1,12 @@
-####### FOR INVERTED LABELS ############
-#### 1- LIVE, 0 - SPOOF
-gpu: 0
+#device: &device cpu
+gpu: 2
 
 show_imgs: False
 
 loss_coef:  # coefficients for losses
   clf_loss: 5.0
   reg_loss: 5.0
-  trip_loss: 1.0
+  trip_loss: 0.1
 
 # TODO: config for optimizer
 lr: 0.0005  # optimizer lr
@@ -58,15 +57,15 @@ std:
 #  factor: 0.709
 #  device: *device
 
-train_df: "/root/datasets/siwm/train_labels_inverted.csv"  # path to train csv file
-val_df: "/root/datasets/siwm/val_labels_inverted.csv"  # path to validation csv file
-path_root: "/root/datasets/siwm"  # prefix path to your images
+train_df: "/root/datasets/oulu/Protocols/Protocol_2/train.csv"  # path to train csv file
+val_df: "/root/datasets/oulu/Protocols/Protocol_2/test.csv"  # used test because dev has same session
+path_root: "/root/datasets/oulu"  # prefix path to your images
 
 batch_size: 32  # batch size for both validation and train dataloader
 num_workers_train: 0  # param for training dataloader
 num_workers_val: 0  # param for validation dataloader
 
-default_root_dir: "/root/lgsc/logs/siwm"  # path to save pytorch_lightning logs
+default_root_dir: "/root/lgsc/logs/oulu/protocol_2"  # path to save pytorch_lightning logs
 max_epochs: 25  # max number of epochs to train (if doesn't achieved early stopping)
 
 use_balance_sampler: False  # You can try overcome class disbalance using balance sampler

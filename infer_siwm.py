@@ -9,7 +9,7 @@ import os
 import torch
 from torch.utils.data import DataLoader
 
-from pl_model import LightningModel
+from pl_model_siwm import LightningModel
 from datasets import get_test_augmentations, SIWM
 from metrics import eval_from_scores
 
@@ -111,8 +111,8 @@ if __name__ == "__main__":
             model_, dataloader_, args_.device, args_.verbose, True
         )
 
-        if not os.path.isdir("results/"):
-            os.makedirs("results/")
+        if not os.path.isdir("results/siwm/"):
+            os.makedirs("results/siwm/")
 
         with open(args_.out_file, "w") as file:
             file.write(f"acer - {acer_}\n")

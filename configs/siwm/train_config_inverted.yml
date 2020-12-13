@@ -16,6 +16,7 @@ milestones:  # MultiStepLR scheduler params
   - 5
   - 8
   - 12
+  - 20
 gamma: 0.3
 
 image_size: 224  # size of input image
@@ -67,7 +68,7 @@ num_workers_train: 0  # param for training dataloader
 num_workers_val: 0  # param for validation dataloader
 
 default_root_dir: "/root/lgsc/logs/siwm"  # path to save pytorch_lightning logs
-max_epochs: 25  # max number of epochs to train (if doesn't achieved early stopping)
+max_epochs: 30  # max number of epochs to train (if doesn't achieved early stopping)
 
 use_balance_sampler: False  # You can try overcome class disbalance using balance sampler
 use_weighted_sampler: False  # You can try overcome class disbalance using weighted sampler

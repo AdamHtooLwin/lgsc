@@ -1,7 +1,7 @@
 device: cuda:2  # can infer using only 1 gpu
 verbose: True  # whether print statistics or not
 
-checkpoints: "/root/lgsc/logs/siwm/tensorboard/default/version_2/checkpoints/epoch=19.ckpt"  # path to pl checkpoint
+checkpoints: "/root/lgsc/logs/siwm/tensorboard/default/version_3/checkpoints/epoch=24.ckpt"  # path to pl checkpoint
 
 image_size: 224  # size of input image
 mean:
@@ -37,8 +37,8 @@ batch_size: 64  # batch size for infer dataloader
 #  factor: 0.709
 #  device: *device
 
-infer_df: "/root/datasets/casia-fasd/test_labels.csv"  # path to csv file with test data
+infer_df: "/root/datasets/siwm/test_labels_inverted.csv"  # path to csv file with test data
 root: "/root/datasets/siwm"  # prefix path to your images
-out_file:  "/root/lgsc/results/siwm/version_2_fasd_test.txt"  # path to file you want save your results
+out_file:  "/root/lgsc/results/siwm/version_3_siwm_test.txt"  # path to file you want save your results
 
 use_weighted_sampler: False  # You can try overcome class disbalance using weighted sampler

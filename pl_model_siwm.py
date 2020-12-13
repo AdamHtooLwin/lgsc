@@ -40,7 +40,7 @@ class LightningModel(pl.LightningModule):
     def __init__(self, hparams):
         super().__init__()
         self.hparams = hparams
-        self.model = SCAN(pretrained=False)
+        self.model = SCAN(pretrained=True)
         self.triplet_loss = TripletLoss()
         self.log_cues = not self.hparams.cue_log_every == 0
         self.grid_maker = GridMaker()

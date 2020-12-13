@@ -9,7 +9,7 @@ class SCAN(nn.Module):
         super().__init__()
         self.backbone = ResNet18Encoder(pretrained=pretrained)
         self.decoder = Decoder()
-        self.clf = ResNet18Classifier(dropout=dropout, pretrained=pretrained)
+        self.clf = ResNet18Classifier(dropout=dropout)
 
     def forward(self, x):
         outs = self.backbone(x)

@@ -1,6 +1,6 @@
 ####### FOR INVERTED LABELS ############
 #### 1- LIVE, 0 - SPOOF
-gpu: 0
+gpu: 2
 
 show_imgs: False
 

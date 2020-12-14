@@ -172,7 +172,7 @@ class ResNet18Classifier(nn.Module):
         dropout: float = 0.5,
     ):
         super().__init__()
-        self.resnet18 = models.resnet18(pretrained=pretrained)
+        self.resnet18 = models.resnet18(pretrained=False)
         self.resnet18.fc = nn.Linear(
             in_features=self.resnet18.fc.in_features, out_features=num_classes
         )

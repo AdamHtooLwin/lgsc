@@ -50,7 +50,7 @@ if __name__ == "__main__":
 
     parser.add_argument('videos_folder', type=str, help='Folder to process videos.')
     parser.add_argument('-t', '--file_type', type=str, help='File type of video.', default="avi")
-    parser.add_argument('-f', '--frames', type=int, help='Number of frames to extract.', default=99999)
+    parser.add_argument('-f', '--frames', type=int, help='Number of frames to extract.', default=15)
     parser.add_argument('-o', '--output_csv', type=str, help='File to output CSV label file.', default=None)
     parser.add_argument('-l', '--labels_file', type=str, help='The file to refer to for the labels.', default=None)
 

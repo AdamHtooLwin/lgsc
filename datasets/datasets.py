@@ -66,10 +66,8 @@ class Dataset(torch.utils.data.Dataset):
         return len(self.df)
 
     def __getitem__(self, item: int):
-        path = os.path.join(self.root, self.df.iloc[item].path)
-        # parent_path, file_name = os.path.split(path)
-        # file = np.random.choice(os.listdir(parent_path))
-        # full_path = os.path.join(parent_path, file)
+        # updated for absolute paths
+        path = self.df.iloc[item].path
 
         image = Image.open(path)
         if self.with_labels:

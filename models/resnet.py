@@ -168,11 +168,11 @@ class ResNet18Classifier(nn.Module):
     def __init__(
         self,
         num_classes: int = 2,
-        pretrained: bool = True,
+        pretrained: bool = False,
         dropout: float = 0.5,
     ):
         super().__init__()
-        self.resnet18 = models.resnet18(pretrained=False)
+        self.resnet18 = models.resnet18(pretrained=pretrained)
         self.resnet18.fc = nn.Linear(
             in_features=self.resnet18.fc.in_features, out_features=num_classes
         )

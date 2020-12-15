@@ -42,6 +42,7 @@ if __name__ == "__main__":
         oulu_folder + "/Protocols/Protocol_4/test_6.csv",
     ]
 
+    # use inverted files for live 1 spoof 0
     siwm_csvs = [
         siwm_folder + "/train_labels_inverted.csv",
         siwm_folder + "/val_labels_inverted.csv",

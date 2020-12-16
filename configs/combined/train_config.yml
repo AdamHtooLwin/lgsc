@@ -1,6 +1,6 @@
 ####### FOR INVERTED LABELS ############
 #### 1- LIVE, 0 - SPOOF
-gpu: 0
+gpu: 1
 
 show_imgs: False
 
@@ -10,7 +10,7 @@ loss_coef:  # coefficients for losses
   trip_loss: 1.0
 
 # TODO: config for optimizer
-lr: 0.0005  # optimizer lr
+lr: 0.001  # optimizer lr
 # TODO: config for scheduler
 milestones:  # MultiStepLR scheduler params
   - 5
@@ -71,5 +71,13 @@ default_root_dir: "/root/lgsc/logs/combined"  # path to save pytorch_lightning l
 max_epochs: 30  # max number of epochs to train (if doesn't achieved early stopping)
 
 use_balance_sampler: False  # You can try overcome class disbalance using balance sampler
-use_weighted_sampler: False  # You can try overcome class disbalance using weighted sampler
+use_weighted_sampler: True  # You can try overcome class disbalance using weighted sampler
 use_focal_loss: False  # You can try use focal loss instead of cross-entropy loss
+
+data:
+  train:
+    live: 28316
+    fake: 46887
+  val:
+    live: 11918
+    fake: 32609

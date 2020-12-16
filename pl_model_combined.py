@@ -279,8 +279,8 @@ class LightningModel(pl.LightningModule):
             shuffle = False
 
         elif self.hparams.use_weighted_sampler:
-            class_sample_count = [self.hparams.data['train']['live'], self.hparams.data['train']['fake']]
-            weights = 1 / torch.Tensor(class_sample_count)
+            class_sample_count = [2, 2]
+            weights = 1. / torch.Tensor(class_sample_count)
 
             labels = list(df.target.values)
             samples_weights = weights[labels]

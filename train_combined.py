@@ -16,8 +16,8 @@ from pl_model_combined import LightningModel
 # plt.plot([3, 2, 1])
 # plt.show()
 #
-# os.environ['http_proxy'] = 'http://192.41.170.23:3128'
-# os.environ['https_proxy'] = 'http://192.41.170.23:3128'
+os.environ['http_proxy'] = 'http://192.41.170.23:3128'
+os.environ['https_proxy'] = 'http://192.41.170.23:3128'
 
 
 if __name__ == "__main__":

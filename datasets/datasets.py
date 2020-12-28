@@ -10,6 +10,40 @@ import albumentations as A
 from albumentations.pytorch import ToTensorV2 as ToTensor
 
 
+def scale(img, min: float = -1.0, max: float = 1.0):
+    img_std = (img - 0) / (255 - 0)
+    img_scaled = img_std * (max - min) + min
+
+    return np.float32(img_scaled)
+
+
+class MinMaxScale(A.ImageOnlyTransform):
+    """
+    Args:
+        min_value (float, list of float): minimum of range
+        max_value  (float, list of float): maximum of range
+
+    Targets:
+        image
+
+    Image types:
+        uint8, float32
+    """
+
+    def __init__(
+        self, min_value: float = -1.0, max_value: float = 1.0
+    ):
+        super(MinMaxScale, self).__init__()
+        self.min_value = min_value
+        self.max_value = max_value
+
+    def apply(self, image, **params):
+        return scale(image, self.min_value, self.max_value)
+
+    def get_transform_init_args_names(self):
+        return ("min", "max")
+
+
 def get_train_augmentations(image_size: int = 224, mean: tuple = (0, 0, 0), std: tuple = (1, 1, 1)):
     return A.Compose(
         [
@@ -22,7 +56,7 @@ def get_train_augmentations(image_size: int = 224, mean: tuple = (0, 0, 0), std:
             # A.RandomCrop(image_size, image_size, p=0.5),
 
             A.LongestMaxSize(image_size),
-            A.Normalize(mean=mean, std=std),
+            MinMaxScale(),
             A.HorizontalFlip(),
             A.PadIfNeeded(image_size, image_size, 0),
             # A.Transpose(),
@@ -36,7 +70,7 @@ def get_test_augmentations(image_size: int = 224, mean: tuple = (0, 0, 0), std: 
         [
             A.Resize(image_size, image_size),
             A.LongestMaxSize(image_size),
-            A.Normalize(mean=mean, std=std),
+            MinMaxScale(),
             A.PadIfNeeded(image_size, image_size, 0),
             ToTensor(),
         ]
@@ -70,6 +104,8 @@ class Dataset(torch.utils.data.Dataset):
         path = self.df.iloc[item].path
 
         image = Image.open(path)
+        original_image = image
+
         if self.with_labels:
             target = self.df.iloc[item].target
 
@@ -101,6 +137,11 @@ class Dataset(torch.utils.data.Dataset):
         if self.with_labels:
             return image, target
         else:
+            # output = torch.cat((image, original_image), 0)
+            #
+            # assert torch.equal(output[:3], image)
+            # assert torch.equal(output[3:], original_image)
+
             return image
 
 

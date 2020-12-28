@@ -13,10 +13,10 @@ loss_coef:  # coefficients for losses
 lr: 0.001  # optimizer lr
 # TODO: config for scheduler
 milestones:  # MultiStepLR scheduler params
-  - 5
-  - 8
-  - 12
-  - 20
+  - 3
+  - 6
+  - 10
+  - 15
 gamma: 0.3
 
 image_size: 224  # size of input image

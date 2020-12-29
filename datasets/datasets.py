@@ -14,7 +14,7 @@ def scale(img, min: float = -1.0, max: float = 1.0):
     img_std = (img - 0) / (255 - 0)
     img_scaled = img_std * (max - min) + min
 
-    return np.float32(img_scaled)
+    return img_scaled.astype(np.float32)
 
 
 class MinMaxScale(A.ImageOnlyTransform):

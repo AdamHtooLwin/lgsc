@@ -1,6 +1,6 @@
 ####### FOR INVERTED LABELS ############
 #### 1- LIVE, 0 - SPOOF
-gpu: 1
+gpu: 0
 
 show_imgs: False
 
@@ -13,7 +13,7 @@ loss_coef:  # coefficients for losses
 lr: 0.001  # optimizer lr
 # TODO: config for scheduler
 milestones:  # MultiStepLR scheduler params
-  - 5
+  - 4
   - 8
   - 12
   - 20

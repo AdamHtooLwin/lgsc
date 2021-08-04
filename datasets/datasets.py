@@ -24,7 +24,7 @@ def get_train_augmentations(image_size: int = 224, mean: tuple = (0, 0, 0), std:
             A.LongestMaxSize(image_size),
             A.Normalize(mean=mean, std=std),
             A.HorizontalFlip(),
-            A.PadIfNeeded(image_size, image_size, 0),
+            A.PadIfNeeded(image_size, image_size),
             # A.Transpose(),
             ToTensor(),
         ]
@@ -37,7 +37,7 @@ def get_test_augmentations(image_size: int = 224, mean: tuple = (0, 0, 0), std: 
             A.Resize(image_size, image_size),
             A.LongestMaxSize(image_size),
             A.Normalize(mean=mean, std=std),
-            A.PadIfNeeded(image_size, image_size, 0),
+            A.PadIfNeeded(image_size, image_size),
             ToTensor(),
         ]
     )
@@ -68,6 +68,7 @@ class Dataset(torch.utils.data.Dataset):
     def __getitem__(self, item: int):
         # updated for absolute paths
         path = self.df.iloc[item].path
+        weight = self.df.iloc[item].weight
 
         image = Image.open(path)
         if self.with_labels:

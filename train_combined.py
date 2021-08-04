@@ -1,4 +1,6 @@
 from argparse import ArgumentParser, Namespace
+
+import yaml
 from pytorch_lightning import loggers as pl_loggers
 from pytorch_lightning.callbacks import ModelCheckpoint
 
@@ -24,7 +26,9 @@ if __name__ == "__main__":
     parser = ArgumentParser()
     parser.add_argument("-c", "--configs", required=True)
     args = parser.parse_args()
-    configs = safitty.load(args.configs)
+    with open(args.configs, 'r') as stream:
+        configs = yaml.safe_load(stream)
+
     configs = Namespace(**configs)
 
     if not os.path.isdir(configs.default_root_dir):

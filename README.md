@@ -1,10 +1,9 @@
 # LGSC-for-FAS pytorch
-## WORK IN PROGRESS
 
-This repository is reimplementation of ["LGSC-for-FAS"](https://github.com/VIS-VAR/LGSC-for-FAS) repository, which is implementation
+This repository is a **reimplementation of a [reimplementation](https://github.com/Podidiving/lgsc-for-fas-pytorch)** (yes that's right) of ["LGSC-for-FAS"](https://github.com/VIS-VAR/LGSC-for-FAS) repository, which is implementation
 of ["Learning Generalized Spoof Cues for FaceAnti-spoofing (LGSC)"](https://arxiv.org/abs/2005.03922)
 
-Code of this repository uses ["pytorch"](https://github.com/pytorch/pytorch) and ["pytorch_lightning"](https://github.com/PyTorchLightning/pytorch-lightning)
+Code of this repository uses ["pytorch"](https://github.com/pytorch/pytorch) and ["pytorch_lightning"](https://github.com/PyTorchLightning/pytorch-lightning).
 
 ### Train
 There are 2 ways:

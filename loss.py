@@ -48,7 +48,7 @@ def pairwise_distance_torch(embeddings, device):
     return pairwise_distances
 
 
-def TripletSemiHardLoss(y_true, y_pred, device, margin=1.0):
+def TripletSemiHardLoss(y_true, y_pred, device, weights, margin=1.0):
     """Computes the triplet loss_functions with semi-hard negative mining.
        The loss_functions encourages the positive distances (between a pair of embeddings
        with the same labels) to be smaller than the minimum negative distance
@@ -134,11 +134,20 @@ def TripletSemiHardLoss(y_true, y_pred, device, margin=1.0):
     ).to(device)
     num_positives = mask_positives.sum()
 
+    # triplet_loss = (
+    #                    torch.max(
+    #                        torch.mul(loss_mat, mask_positives), torch.tensor([0.0]).to(device)
+    #                    )
+    #                ).sum() / num_positives
+
     triplet_loss = (
-                       torch.max(
-                           torch.mul(loss_mat, mask_positives), torch.tensor([0.0]).to(device)
-                       )
-                   ).sum() / num_positives
+                           torch.max(
+                               torch.mul(loss_mat, mask_positives), torch.tensor([0.0]).to(device)
+                           )
+                       ) * weights
+
+    triplet_loss = triplet_loss.sum() / num_positives
+
     triplet_loss = triplet_loss.to(dtype=embeddings.dtype)
     return triplet_loss
 
@@ -148,7 +157,7 @@ class TripletLoss(nn.Module):
         super().__init__()
         self.margin = margin
 
-    def forward(self, input, target, **kwargs):
+    def forward(self, input, target, weights, **kwargs):
         return TripletSemiHardLoss(
-            target, F.normalize(input, p=2, dim=-1), target.device, self.margin
+            target, F.normalize(input, p=2, dim=-1), target.device, weights, self.margin,
         )

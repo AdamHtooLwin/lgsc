@@ -13,7 +13,7 @@ from catalyst.contrib.nn.criterion.focal import FocalLossMultiClass
 import pytorch_lightning as pl
 import matplotlib.pyplot as plt
 
-from datasets import Dataset, get_test_augmentations, get_train_augmentations
+from datasets import Dataset, WeightedDataset, get_test_augmentations, get_train_augmentations
 from models.scan import SCAN
 from loss import TripletLoss
 from metrics import eval_from_scores
@@ -47,7 +47,7 @@ class LightningModel(pl.LightningModule):
         if self.hparams.use_focal_loss:
             self.clf_criterion = FocalLossMultiClass()
         else:
-            self.clf_criterion = nn.CrossEntropyLoss()
+            self.clf_criterion = nn.CrossEntropyLoss(reduction='none')
 
     def get_progress_bar_dicts(self):
         items = super().get_progress_bar_dicts()
@@ -60,29 +60,34 @@ class LightningModel(pl.LightningModule):
         outs, _ = self.model(x)
         return outs[-1]
 
-    def calc_losses(self, outs, clf_out, target):
+    def calc_losses(self, outs, clf_out, target, weights):
 
         clf_loss = (
             self.clf_criterion(clf_out, target)
             * self.hparams.loss_coef["clf_loss"]
-        )
+        ) * weights
+
+        clf_loss = torch.mean(clf_loss)
+
         cue = outs[-1]
         cue = target.reshape(-1, 1, 1, 1) * cue
         num_reg = (
             torch.sum(target) * cue.shape[1] * cue.shape[2] * cue.shape[3]
         ).type(torch.float)
-        reg_loss = (
-            torch.sum(torch.abs(cue)) / (num_reg + 1e-9)
-        ) * self.hparams.loss_coef["reg_loss"]
+
+        reg_loss = torch.abs(cue) * weights.reshape(-1, 1, 1, 1)
+
+        reg_loss = (torch.sum(reg_loss) / (num_reg + 1e-9)) * self.hparams.loss_coef["reg_loss"]
 
         trip_loss = 0
         bs = outs[-1].shape[0]
         for feat in outs[:-1]:
             feat = F.adaptive_avg_pool2d(feat, [1, 1]).view(bs, -1)
             trip_loss += (
-                self.triplet_loss(feat, target)
+                self.triplet_loss(feat, target, weights)
                 * self.hparams.loss_coef["trip_loss"]
             )
+
         total_loss = clf_loss + reg_loss + trip_loss
 
         return total_loss, clf_loss, reg_loss, trip_loss
@@ -90,9 +95,10 @@ class LightningModel(pl.LightningModule):
     def training_step(self, batch, batch_idx):
         input_ = batch[0]
         target = batch[1]
+        weights = batch[2]
 
         outs, clf_out = self(input_)
-        loss, clf_loss, reg_loss, trip_loss = self.calc_losses(outs, clf_out, target)
+        loss, clf_loss, reg_loss, trip_loss = self.calc_losses(outs, clf_out, target, weights)
 
         if self.hparams.show_imgs:
             imshow(input_, title="Training")
@@ -164,12 +170,13 @@ class LightningModel(pl.LightningModule):
     def validation_step(self, batch, batch_idx):
         input_ = batch[0]
         target = batch[1]
+        weights = batch[2]
 
         if self.hparams.show_imgs:
             imshow(batch[0], title="Validation")
 
         outs, clf_out = self(input_)
-        loss, clf_loss, reg_loss, trip_loss = self.calc_losses(outs, clf_out, target)
+        loss, clf_loss, reg_loss, trip_loss = self.calc_losses(outs, clf_out, target, weights)
 
         scores = []
         cues = outs[-1]
@@ -269,7 +276,7 @@ class LightningModel(pl.LightningModule):
         except AttributeError:
             face_detector = None
 
-        dataset = Dataset(
+        dataset = WeightedDataset(
             df, self.hparams.path_root, transforms, face_detector=face_detector
         )
 
@@ -318,7 +325,7 @@ class LightningModel(pl.LightningModule):
         except AttributeError:
             face_detector = None
 
-        dataset = Dataset(
+        dataset = WeightedDataset(
             df, self.hparams.path_root, transforms, face_detector=face_detector
         )
 

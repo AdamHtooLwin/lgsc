@@ -18,7 +18,7 @@ milestones:  # MultiStepLR scheduler params
 gamma: 0.3
 
 image_size: 224  # size of input image
-cue_log_every: 500  # will log cues every cue_log_every batches. If 0, than won't log
+cue_log_every: 5000  # will log cues every cue_log_every batches. If 0, than won't log
 #mean:
 #  r: 100
 #  g: 100
@@ -65,7 +65,7 @@ batch_size: 32  # batch size for both validation and train dataloader
 num_workers_train: 0  # param for training dataloader
 num_workers_val: 0  # param for validation dataloader
 
-default_root_dir: "/root/meta-fas/logs/baseline"  # path to save pytorch_lightning logs
+default_root_dir: "/root/lgsc/logs/baseline"  # path to save pytorch_lightning logs
 max_epochs: 30  # max number of epochs to train (if doesn't achieved early stopping)
 
 use_balance_sampler: False  # You can try overcome class disbalance using balance sampler

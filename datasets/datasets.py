@@ -113,7 +113,8 @@ class WeightedDataset(torch.utils.data.Dataset):
         face_detector: dict = None,
         with_labels: bool = True,
     ):
-        self.df = df.sample(frac=1).reset_index(drop=True)
+        # self.df = df.sample(frac=1).reset_index(drop=True)
+        self.df = df.reset_index(drop=True)
         self.root = root
         self.transforms = transforms
         self.with_labels = with_labels

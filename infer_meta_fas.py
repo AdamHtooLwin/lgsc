@@ -111,8 +111,8 @@ if __name__ == "__main__":
             model_, dataloader_, args_.device, args_.verbose, True
         )
 
-        if not os.path.isdir("results/meta-fas/"):
-            os.makedirs("results/meta-fas/")
+        if not os.path.isdir("results/baseline/"):
+            os.makedirs("results/baseline/")
 
         with open(args_.out_file, "w") as file:
             file.write(f"acer - {acer_}\n")

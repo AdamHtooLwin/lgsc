@@ -1,5 +1,6 @@
 ####### FOR INVERTED LABELS ############
 #### 1- LIVE, 0 - SPOOF
+#### No new samples
 gpu: 0
 
 show_imgs: False
@@ -18,7 +19,7 @@ milestones:  # MultiStepLR scheduler params
 gamma: 0.3
 
 image_size: 224  # size of input image
-cue_log_every: 100000  # will log cues every cue_log_every batches. If 0, than won't log
+cue_log_every: 1000000  # will log cues every cue_log_every batches. If 0, than won't log
 #mean:
 #  r: 100
 #  g: 100
@@ -57,7 +58,7 @@ std:
 #  factor: 0.709
 #  device: *device
 
-train_df: "/root/datasets/meta-fas-experiment/baseline/train_pruned.csv"  # path to train csv file
+train_df: "/root/datasets/meta-fas-experiment/baseline/train_original.csv"  # path to train csv file
 val_df: "/root/datasets/meta-fas-experiment/baseline/val.csv"  # path to validation csv file
 path_root: "/root/datasets/combined"  # prefix path to your images
 
@@ -66,7 +67,7 @@ num_workers_train: 0  # param for training dataloader
 num_workers_val: 0  # param for validation dataloader
 
 default_root_dir: "/root/lgsc/logs/baseline"  # path to save pytorch_lightning logs
-max_epochs: 30  # max number of epochs to train (if doesn't achieved early stopping)
+max_epochs: 50  # max number of epochs to train (if doesn't achieved early stopping)
 
 use_balance_sampler: False  # You can try overcome class disbalance using balance sampler
 use_weighted_sampler: True # You can try overcome class disbalance using weighted sampler

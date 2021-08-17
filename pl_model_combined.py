@@ -137,6 +137,8 @@ class LightningModel(pl.LightningModule):
         self.logger.experiment.add_scalar('Training metrics/NPCER', npcer, self.current_epoch * len(self.train_dataloader()) + batch_idx)
         # self.logger.experiment.add_scalar('Training metrics/ROC-AUC', roc_auc, self.current_epoch * len(self.train_dataloader()) + batch_idx)
 
+        current_lr = self.trainer.lr_schedulers[0]['scheduler'].get_lr()[0]
+        self.logger.experiment.add_scalar('Learning rate', current_lr, self.current_epoch * len(self.train_dataloader()) + batch_idx)
         # tensorboard_logs = {
         #     "train_loss": loss,
         #     "clf_loss": clf_loss,
